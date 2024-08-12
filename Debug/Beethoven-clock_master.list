@@ -35,17 +35,17 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  15 .debug_rnglists 00000f64  00000000  00000000  0001b0d0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  000176e2  00000000  00000000  0001c034  2**0
+ 16 .debug_macro  00002ba0  00000000  00000000  0001c034  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   000174c6  00000000  00000000  00033716  2**0
+ 17 .debug_line   000174c6  00000000  00000000  0001ebd4  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    0009717c  00000000  00000000  0004abdc  2**0
+ 18 .debug_str    0009717c  00000000  00000000  0003609a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  000e1d58  2**0
+ 19 .comment      00000043  00000000  00000000  000cd216  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  000047f8  00000000  00000000  000e1d9c  2**2
+ 20 .debug_frame  000047f8  00000000  00000000  000cd25c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000065  00000000  00000000  000e6594  2**0
+ 21 .debug_line_str 00000065  00000000  00000000  000d1a54  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -868,9 +868,9 @@ static void MX_SPI2_Init(void)
  8000558:	4b14      	ldr	r3, [pc, #80]	@ (80005ac <MX_SPI2_Init+0x74>)
  800055a:	2200      	movs	r2, #0
  800055c:	611a      	str	r2, [r3, #16]
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
  800055e:	4b13      	ldr	r3, [pc, #76]	@ (80005ac <MX_SPI2_Init+0x74>)
- 8000560:	2200      	movs	r2, #0
+ 8000560:	2201      	movs	r2, #1
  8000562:	615a      	str	r2, [r3, #20]
   hspi2.Init.NSS = SPI_NSS_SOFT;
  8000564:	4b11      	ldr	r3, [pc, #68]	@ (80005ac <MX_SPI2_Init+0x74>)
@@ -901,9 +901,9 @@ static void MX_SPI2_Init(void)
  800058a:	4b08      	ldr	r3, [pc, #32]	@ (80005ac <MX_SPI2_Init+0x74>)
  800058c:	2200      	movs	r2, #0
  800058e:	631a      	str	r2, [r3, #48]	@ 0x30
-  hspi2.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi2.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
  8000590:	4b06      	ldr	r3, [pc, #24]	@ (80005ac <MX_SPI2_Init+0x74>)
- 8000592:	2208      	movs	r2, #8
+ 8000592:	2200      	movs	r2, #0
  8000594:	635a      	str	r2, [r3, #52]	@ 0x34
   if (HAL_SPI_Init(&hspi2) != HAL_OK)
  8000596:	4b05      	ldr	r3, [pc, #20]	@ (80005ac <MX_SPI2_Init+0x74>)

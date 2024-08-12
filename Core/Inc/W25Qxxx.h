@@ -79,14 +79,120 @@ typedef struct {
 	// STM32 handle for SPI bus
 	SPI_HandleTypeDef *hspi;
 
+	// Device IDs and part numbers
+	uint8_t mfrID;
+	uint8_t devID;
+	uint16_t JEDEC_ID;
+
+	// Status Registers
+		/*
+		 * Status Register 1
+		 * 0b76543210
+		 * Bit 7: Status Register Protect (SRP) - Controls Write access to this status register
+		 * 										  This bit works in conjunction with bit 0 of Status register 2
+		 * 										  Refer to table in section 7.1.7 of datasheet
+		 * Bit 6: Sector Protect (SEC) - R/W, Controls if block protect bits protect 4KB sectors (1) or 64KB blocks (0)
+		 * Bit 5: Top/Bottom Protect (TB) - R/W, Controls whether block protect bits protect top (1) or bottom (0)
+		 * 							   of array
+		 * Bits 4-2: Block Protect (BP) - R/W, these 3 bits can be used to protect all/none/portions
+		 * 							 of the chip from program/erase instructions. See protection table in datasheet
+		 * Bit 1: Write Enable Latch (WEL) - read-only, set to 1 after executing write enable instruction
+		 * Bit 0: Write in Progress (BUSY) - read-only, set to 1 when device
+		 * 		  is performing actions described in section 7.1.1 of datasheet
+		 *
+		 */
+		uint8_t statReg1;
+
+		/*
+		 * Status Register 2
+		 * 0b76543210
+		 *
+		 * Bit 7: Suspend Status (SUS) - read-only, set to 1 after executing an erase/program suspend instruction
+		 * 								 cleared to 0 by erase/program resume instruction or power up/down
+		 * Bit 6: Complement Protect (CMP) - R/W, Used to complement blocks of protected memory. See table in datasheet
+		 * Bits 5-3: Security Register Lock (LB) - R/W, Provide write protect control to security registers.
+		 * 										   Each bit set to 1 locks the security register writes. OTP!!
+		 * Bit 2: Reserved
+		 * Bit 1: Quad Enable (QE) - Enable quad SPI (1).
+		 * Bit 0: Status Register Lock (SRL) - R/W, Controls Write access to this status register
+		 * 									   This bit works in conjunction with bit 7 of Status register 1
+		 * 									   Refer to table in section 7.1.7 of datasheet
+		 *
+		 */
+		uint8_t statReg2;
+
+		/*
+		 * Status Register 3
+		 * 0b76543210
+		 *
+		 * Bit 7: Hold/Reset (HOLD/RST) - Software hold/reset fuction bit?
+		 * Bits 6-5: Output Driver Strength (DRV1, DRV0) - 00 = 100%, 01 = 75%, 10 = 50%, 11 = 25%
+		 * Bit 4: Reserved
+		 * Bit 3: Reserved
+		 * Bit 2: Write Protect Selection (WPS) - Used to select block protects,
+		 * 										  see table in section 7.1.7 of datasheet
+		 * Bit 1: Reserved
+		 * Bit 0: Reserved
+		 *
+		 */
+		uint8_t statReg3;
+
+	// Other config registers
+	uint8_t SFDPReg;
+	uint8_t securityReg;
+	uint8_t writeEnable; //0 = disable, 1 = enable
+	uint8_t powerUp; 	 //0 = powered down, 1 = powered down
+
 
 } W25Q;
 
-uint8_t W_25Q_Init(GPIO_TypeDef *nCSPort, GPIO_TypeDef *nWPPort, GPIO_TypeDef *nRSTPort,
-					uint32_t nCSPin, uint32_t nWPPin, uint32_t nRSTPin, SPI_HandleTypeDef *hspi);
+uint8_t W25Q_Init(W25Q *wq, GPIO_TypeDef *nCSPort, GPIO_TypeDef *nWPPort, GPIO_TypeDef *nRSTPort,
+					uint32_t nCSPin, uint32_t nWPPin, uint32_t nRSTPin, SPI_HandleTypeDef *hspi, uint8_t devID);
 
+/*
+ * Will release device from power-down and fetch all of the IDs
+ */
+HAL_StatusTypeDef W25Q_GetIDs(W25Q *wq, uint8_t devID);
 
+/*
+ * Enables writing to memory
+ */
+HAL_StatusTypeDef W25Q_EnableWrite(W25Q *wq);
+/*
+ * Disables writing to memory
+ */
+HAL_StatusTypeDef W25Q_DisableWrite(W25Q *wq);
 
+/*
+ * Get/Set methods for write status register
+ */
+HAL_StatusTypeDef W25Q_ReadStatusRegs(W25Q *wq);
+HAL_StatusTypeDef W25Q_WriteStatusReg1(W25Q *wq);
+HAL_StatusTypeDef W25Q_WriteStatusReg2(W25Q *wq);
+HAL_StatusTypeDef W25Q_WriteStatusReg3(W25Q *wq);
+
+/*
+ * Read data from memory
+ * startAddress = address to begin reading memory from
+ * dataSize = number of bits to be read
+ * dataLocation = pointer to array where data is to be placed
+ */
+HAL_StatusTypeDef W25Q_readData(W25Q *wq, uint32_t startAddress, uint32_t dataSize, uint8_t *dataLocation);
+
+/*
+ * Erases Entire memory
+ */
+HAL_StatusTypeDef W25Q_ChipErase(W25Q *wq);
+
+/*
+ * Powers down the chip to a low-power mode
+ */
+HAL_StatusTypeDef W25Q_ChipPowerDown(W25Q *wq);
+
+/*
+ * Resets the chip
+ */
+HAL_StatusTypeDef W25Q_ChipReset(W25Q *wq);
 
 
 #endif /* INC_W25QXXX_H_ */

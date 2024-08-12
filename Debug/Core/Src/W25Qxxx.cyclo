@@ -1,0 +1,12 @@
+../Core/Src/W25Qxxx.c:13:9:W25Q_Init	2
+../Core/Src/W25Qxxx.c:43:19:W25Q_GetIDs	7
+../Core/Src/W25Qxxx.c:88:19:W25Q_EnableWrite	1
+../Core/Src/W25Qxxx.c:97:19:W25Q_DisableWrite	1
+../Core/Src/W25Qxxx.c:105:19:W25Q_ReadStatusRegs	1
+../Core/Src/W25Qxxx.c:113:19:W25Q_WriteStatusReg1	1
+../Core/Src/W25Qxxx.c:121:19:W25Q_WriteStatusReg2	1
+../Core/Src/W25Qxxx.c:129:19:W25Q_WriteStatusReg3	1
+../Core/Src/W25Qxxx.c:137:19:W25Q_readData	1
+../Core/Src/W25Qxxx.c:145:19:W25Q_ChipErase	1
+../Core/Src/W25Qxxx.c:153:19:W25Q_ChipPowerDown	1
+../Core/Src/W25Qxxx.c:160:19:W25Q_ChipReset	1
