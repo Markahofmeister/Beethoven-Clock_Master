@@ -124,56 +124,63 @@ int main(void)
      // Enter error loop if there's an error in initialization
      if(initStat != 0) {
   	   while(1) {
-		  __NOP();
+  		   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
+  		   HAL_Delay(500);
+  		   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
+  		   HAL_Delay(500);
   	   }
      }
 
+     // Init 7-segment displays
 
-     // Use DMA to read data on chip
-        // Put this into a function eventually
-        HAL_StatusTypeDef halRet = HAL_OK;
-
-
-     //   // Where to store RXed data
-     //   uint8_t dataRXArr[BUFFER_SIZE];
-     //   uint16_t i2sDataTxArr[BUFFER_SIZE / 2];
-     //
-     	// Create read data array with start address
-     	uint8_t dataTXArr[4];
-     //	uint32_t startAddress = 0x000409D0;
-     	uint32_t startAddress = 0x00;
-     	dataTXArr[0] = CMD_READ_DATA;
-     	dataTXArr[1] = (startAddress >> 16);
-     	dataTXArr[2] = (startAddress >> 8) & (0xff);
-     	dataTXArr[3] = (startAddress & 0xff);
-
-
-     	HAL_GPIO_WritePin(w25q.nCSPort, w25q.nCSPin, GPIO_PIN_RESET);
-     	halRet = HAL_SPI_Transmit(w25q.hspi, dataTXArr, 4, HAL_MAX_DELAY);
-     	if(halRet != HAL_OK) {
-     		HAL_GPIO_WritePin(w25q.nCSPort, w25q.nCSPin, GPIO_PIN_SET);
-     		return halRet;
-     	}
-
-     		// RX data
-     	uint8_t dataRXArr[256];
-     		halRet = HAL_SPI_Receive(w25q.hspi, dataRXArr, 256, HAL_MAX_DELAY);
-
-     		HAL_GPIO_WritePin(w25q.nCSPort, w25q.nCSPin, GPIO_PIN_SET);
-
-
-     		// Convert 8-bit values to 16-bit values?
-
-
-     	   __NOP();
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+//     // nOE
+     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 100);
+     	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
+//
+//     // MCLR
+//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
+
+     __NOP();
+
   while (1)
   {
 
+//	  for (int i = 0; i < 32; i++) {
+//
+//		 // Shift a 0 in
+//		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
+//
+//		// Toggle clock GPIO to shift bit into register
+//		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+//		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+//
+//		// Once all data has been shifted out, toggle store clock register to display data.
+//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+//
+//		HAL_Delay(500);
+//
+//	  }
+//
+//
+//	  // Clear it all
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
+//
+//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
+//      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
+//
+//	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+//	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+//
+//	  HAL_Delay(500);
 
     /* USER CODE END WHILE */
 
@@ -463,9 +470,9 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
+  htim2.Init.Prescaler = 800-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4294967295;
+  htim2.Init.Period = 100-1;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)

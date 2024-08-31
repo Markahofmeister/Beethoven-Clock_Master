@@ -2,6 +2,7 @@
 "./Core/Src/NAU8315YG.o"
 "./Core/Src/W25Qxxx.o"
 "./Core/Src/main.o"
+"./Core/Src/sevSeg_shift.o"
 "./Core/Src/stm32g0xx_hal_msp.o"
 "./Core/Src/stm32g0xx_it.o"
 "./Core/Src/syscalls.o"
