@@ -64,7 +64,7 @@ typedef struct {
 	 */
 	GPIO_TypeDef *nCSPort;
 	GPIO_TypeDef *nWPPort;
-	GPIO_TypeDef *nRSTPort;
+	GPIO_TypeDef *nHOLDPort;
 
 	/*
 	 * GPIO Pin mapping for:
@@ -74,7 +74,7 @@ typedef struct {
 	 */
 	uint32_t nCSPin;
 	uint32_t nWPPin;
-	uint32_t nRSTPin;
+	uint32_t nHOLDPin;
 
 	// STM32 handle for SPI bus
 	SPI_HandleTypeDef *hspi;
@@ -129,8 +129,8 @@ typedef struct {
 		 * Bits 6-5: Output Driver Strength (DRV1, DRV0) - 00 = 100%, 01 = 75%, 10 = 50%, 11 = 25%
 		 * Bit 4: Reserved
 		 * Bit 3: Reserved
-		 * Bit 2: Write Protect Selection (WPS) - Used to select block protects,
-		 * 										  see table in section 7.1.7 of datasheet
+		 * Bit 2: Write Protect Selection (WPS) - Used to select block protect scheme,
+		 * 										  see table in section 7.1.5 of datasheet
 		 * Bit 1: Reserved
 		 * Bit 0: Reserved
 		 *
@@ -138,16 +138,40 @@ typedef struct {
 		uint8_t statReg3;
 
 	// Other config registers
-	uint8_t SFDPReg;
-	uint8_t securityReg;
-	uint8_t writeEnable; //0 = disable, 1 = enable
-	uint8_t powerUp; 	 //0 = powered down, 1 = powered down
+
+	uint8_t writeEnable; // 0 = disable, 1 = enable
+	uint8_t powerUp; 	 // 0 = powered down, 1 = powered down
+	uint8_t quadEnable;  // Should be initialized to 0
+	uint8_t driverStrength;
+
+	/*
+	 * Not implemented:
+	 * 		- SFDP Reg
+	 * 		- Security Reg
+	 * 		- Block Protect/Erase
+	 * 		- Dual/Quad SPI stuff
+	 */
 
 
 } W25Q;
 
-uint8_t W25Q_Init(W25Q *wq, GPIO_TypeDef *nCSPort, GPIO_TypeDef *nWPPort, GPIO_TypeDef *nRSTPort,
-					uint32_t nCSPin, uint32_t nWPPin, uint32_t nRSTPin, SPI_HandleTypeDef *hspi, uint8_t devID);
+/*
+ * Initializes SPI memory chip object
+ *
+ * devID = device ID given by Winbond datasheet. This depends on the type/capacity of memory.
+ * isQuadChip = (1) if the chip PN ends in "IQ/IN" or "JQ", quad mode is enabled
+ * 					Seems unchangeable for these PNs of chips
+ * 				(0) if the chip PN ends in "IM" or "JM" quad mode default off
+ *
+ */
+uint8_t W25Q_Init(W25Q *wq, GPIO_TypeDef *nCSPort, GPIO_TypeDef *nWPPort, GPIO_TypeDef *nHOLDPort,
+					uint32_t nCSPin, uint32_t nWPPin, uint32_t nHOLDPin, SPI_HandleTypeDef *hspi,
+					uint8_t devID, uint8_t isQuadChip, uint8_t driveStrength);
+
+/*
+ * Releases chip from power down mode
+ */
+HAL_StatusTypeDef W25Q_ReleasePowerDown(W25Q *wq);
 
 /*
  * Will release device from power-down and fetch all of the IDs
@@ -166,14 +190,13 @@ HAL_StatusTypeDef W25Q_DisableWrite(W25Q *wq);
 /*
  * Get/Set methods for write status register
  */
-HAL_StatusTypeDef W25Q_ReadStatusRegs(W25Q *wq);
-HAL_StatusTypeDef W25Q_WriteStatusReg1(W25Q *wq);
-HAL_StatusTypeDef W25Q_WriteStatusReg2(W25Q *wq);
-HAL_StatusTypeDef W25Q_WriteStatusReg3(W25Q *wq);
+HAL_StatusTypeDef W25Q_ReadStatusReg(W25Q *wq, uint8_t regNum);		// Read single status register
+HAL_StatusTypeDef W25Q_ReadStatusRegs(W25Q *wq);					// Read all status registers
+HAL_StatusTypeDef W25Q_WriteStatusReg(W25Q *wq, uint8_t regNum, uint8_t regVal);
 
 /*
  * Read data from memory
- * startAddress = address to begin reading memory from
+ * startAddress = address to begin reading memory from, 24 bits
  * dataSize = number of bits to be read
  * dataLocation = pointer to array where data is to be placed
  */
@@ -193,6 +216,21 @@ HAL_StatusTypeDef W25Q_ChipPowerDown(W25Q *wq);
  * Resets the chip
  */
 HAL_StatusTypeDef W25Q_ChipReset(W25Q *wq);
+
+/*
+ * Enables (1) or disables (0) quad SPI mode
+ */
+HAL_StatusTypeDef W25Q_QuadEnable(W25Q *wq, uint8_t quadBool);
+
+/*
+ * Sets the river strength of the W25Q output drivers
+ * Options:
+ * 		0 = 100% strength
+ * 		1 = 75% strength
+ * 		2 = 50% strength
+ * 		3 = 25% strength (default)
+ */
+HAL_StatusTypeDef W25Q_SetDriverStrength(W25Q *wq, uint8_t driverStrength);
 
 
 #endif /* INC_W25QXXX_H_ */

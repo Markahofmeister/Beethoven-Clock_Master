@@ -72,6 +72,8 @@ static void MX_SPI2_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
+W25Q w25q;
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -115,6 +117,56 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
+  	  // Init Memory Chip
+     uint8_t initStat = W25Q_Init(&w25q, GPIOA, GPIOA, GPIOA,
+   		  	  	  	  	  	  GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7, &hspi2, 0x17, 1, 1);
+
+     // Enter error loop if there's an error in initialization
+     if(initStat != 0) {
+  	   while(1) {
+		  __NOP();
+  	   }
+     }
+
+
+     // Use DMA to read data on chip
+        // Put this into a function eventually
+        HAL_StatusTypeDef halRet = HAL_OK;
+
+
+     //   // Where to store RXed data
+     //   uint8_t dataRXArr[BUFFER_SIZE];
+     //   uint16_t i2sDataTxArr[BUFFER_SIZE / 2];
+     //
+     	// Create read data array with start address
+     	uint8_t dataTXArr[4];
+     //	uint32_t startAddress = 0x000409D0;
+     	uint32_t startAddress = 0x00;
+     	dataTXArr[0] = CMD_READ_DATA;
+     	dataTXArr[1] = (startAddress >> 16);
+     	dataTXArr[2] = (startAddress >> 8) & (0xff);
+     	dataTXArr[3] = (startAddress & 0xff);
+
+
+     	HAL_GPIO_WritePin(w25q.nCSPort, w25q.nCSPin, GPIO_PIN_RESET);
+     	halRet = HAL_SPI_Transmit(w25q.hspi, dataTXArr, 4, HAL_MAX_DELAY);
+     	if(halRet != HAL_OK) {
+     		HAL_GPIO_WritePin(w25q.nCSPort, w25q.nCSPin, GPIO_PIN_SET);
+     		return halRet;
+     	}
+
+     		// RX data
+     	uint8_t dataRXArr[256];
+     		halRet = HAL_SPI_Receive(w25q.hspi, dataRXArr, 256, HAL_MAX_DELAY);
+
+     		HAL_GPIO_WritePin(w25q.nCSPort, w25q.nCSPin, GPIO_PIN_SET);
+
+
+     		// Convert 8-bit values to 16-bit values?
+
+
+     	   __NOP();
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -122,10 +174,6 @@ int main(void)
   while (1)
   {
 
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-	  HAL_Delay(500);
-	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-	  HAL_Delay(500);
 
     /* USER CODE END WHILE */
 
@@ -377,15 +425,15 @@ static void MX_SPI2_Init(void)
   hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_2EDGE;
+  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi2.Init.CRCPolynomial = 7;
   hspi2.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi2.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
+  hspi2.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
   if (HAL_SPI_Init(&hspi2) != HAL_OK)
   {
     Error_Handler();
