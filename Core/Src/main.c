@@ -139,48 +139,10 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-//     // nOE
-     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 100);
-     	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
-//
-//     // MCLR
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
-//     HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
-
-     __NOP();
 
   while (1)
   {
 
-//	  for (int i = 0; i < 32; i++) {
-//
-//		 // Shift a 0 in
-//		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
-//
-//		// Toggle clock GPIO to shift bit into register
-//		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-//		HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
-//
-//		// Once all data has been shifted out, toggle store clock register to display data.
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
-//		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
-//
-//		HAL_Delay(500);
-//
-//	  }
-//
-//
-//	  // Clear it all
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_SET);
-//
-//	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_SET);
-//      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, GPIO_PIN_RESET);
-//
-//	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
-//	  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
-//
-//	  HAL_Delay(500);
 
     /* USER CODE END WHILE */
 

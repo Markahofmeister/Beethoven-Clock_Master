@@ -2021,10 +2021,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 
 //     // nOE
-     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 100);
+     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_3, 25);
  8000ce4:	4b08      	ldr	r3, [pc, #32]	@ (8000d08 <main+0xbc>)
  8000ce6:	681b      	ldr	r3, [r3, #0]
- 8000ce8:	2264      	movs	r2, #100	@ 0x64
+ 8000ce8:	2219      	movs	r2, #25
  8000cea:	63da      	str	r2, [r3, #60]	@ 0x3c
      	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_3);
  8000cec:	4b06      	ldr	r3, [pc, #24]	@ (8000d08 <main+0xbc>)
