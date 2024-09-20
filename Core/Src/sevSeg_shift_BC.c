@@ -18,15 +18,15 @@
 // This is reversed - i.e., the activation is active low for Beethoven clock
 // Bit 1 in each is set to 1 because it is the decimal point and is changed in the display functions if necessary.
 const uint8_t dispDigits[10] = {0b01000010, 	// 0
-								0b01110111,		// 1
-								0b00101010,		// 2
-								0b00100011,		// 3
-								0b00010111,		// 4
-								0b10000011,		// 5
-								0b10000010,		// 6
-								0b01100111,		// 7
+								0b11011110,		// 1
+								0b10000011,		// 2
+								0b10001010,		// 3
+								0b00011110,		// 4
+								0b00101010,		// 5
+								0b00100010,		// 6
+								0b11001110,		// 7
 								0b00000010,		// 8
-								0b00000011};	// 9
+								0b00001010};	// 9
 
 	// Binary codes for each digit in the form of a 7-segment display.
 	// This is reversed - i.e., the activation is active low for Beethoven clock
@@ -184,15 +184,15 @@ void sevSeg_updateDigits(RTC_TimeTypeDef *updateTime) {
 		dig3Offset = 2;
 	}
 
-	// TODO: Update alarm set here
+	// TODO: Update alarm set decimal point here
 
 	for(int i = 3; i >= 0; i--) {
 
 		sendByte = dispDigits[sendTime[i]];
 
-		if(i == 0) {		// If tenth's place of hour, use special values
-			sendByte = dig3Seg[(updateTime->Hours / 10) + dig3Offset];
-		}
+//		if(i == 0) {		// If tenth's place of hour, use special values
+//			sendByte = dig3Seg[(updateTime->Hours / 10) + dig3Offset];
+//		}
 
 		for(int j = 0; j < 8; j++) {
 
