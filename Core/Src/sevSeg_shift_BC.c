@@ -28,28 +28,6 @@ const uint8_t dispDigits[10] = {0b01000010, 	// 0
 								0b00000010,		// 8
 								0b00001010};	// 9
 
-	// Binary codes for each digit in the form of a 7-segment display.
-	// This is reversed - i.e., the activation is active low for Beethoven clock
-	// Bit 6 in each is set to 1 because it is the decimal point and is changed in the display functions if necessary.
-	//const uint8_t dispDigits[10] = {0b01000010, 	// 0
-	//								0b11101110,		// 1
-	//								0b01010100,		// 2
-	//								0b11000100,		// 3
-	//								0b11101000,		// 4
-	//								0b11000001,		// 5
-	//								0b01000001,		// 6
-	//								0b11100110,		// 7
-	//								0b01000000,		// 8
-	//								0b11000000};	// 9
-
-/*
- * 0b00010000 = Digit 3 LED OFF, LED colons ON, PM LED OFF
- * 0b00110000 = Digit 3 LED ON, LED colons ON, PM LED OFF
- * 0b00011000 = Digit 3 LED OFF, LED colons ON, PM LED ON
- * 0b00111000 = Digit 3 LED ON, LED colons ON, PM LED ON
- */
-const uint8_t dig3Seg[4] = {0b00010000, 0b00110000, 0b00011000, 0b00111000};
-
 /*
  * Global variables to be initialized with GPIO assignments
  */
@@ -162,7 +140,7 @@ void sevSeg_Init(uint16_t shiftDataPin, uint16_t shiftDataClockPin, uint16_t shi
 
 }
 
-void sevSeg_updateDigits(RTC_TimeTypeDef *updateTime) {
+void sevSeg_updateDigits(RTC_TimeTypeDef *updateTime, uint8_t userAlarmEnable) {
 
 	/*
 	 * Determine what time to send to shift registers
@@ -174,25 +152,18 @@ void sevSeg_updateDigits(RTC_TimeTypeDef *updateTime) {
 
 	uint8_t sendByte;					// To be used to shift bits
 
-	/*
-	 * If we are in PM, we should reflect this in the PM LED.
-	 * This offset will update the digit 3 shift register value with the correct sequence.
-	 */
-	uint8_t dig3Offset = 0;
-
-	if(updateTime->TimeFormat == RTC_HOURFORMAT12_PM) {
-		dig3Offset = 2;
-	}
-
-	// TODO: Update alarm set decimal point here
-
 	for(int i = 3; i >= 0; i--) {
 
 		sendByte = dispDigits[sendTime[i]];
 
-//		if(i == 0) {		// If tenth's place of hour, use special values
-//			sendByte = dig3Seg[(updateTime->Hours / 10) + dig3Offset];
-//		}
+		// If tenth's place of hour, set decimal point based on AM/PM.
+		if((i == 0) && (updateTime->TimeFormat == RTC_HOURFORMAT12_PM)) {
+			sendByte = (sendByte & !(1 << 1));
+		}
+		// If tenth's place of minute, set decimal place based on user alarm enabled
+		else if((i == 2) && userAlarmEnable) {
+			sendByte = (sendByte & 0b11111101);
+		}
 
 		for(int j = 0; j < 8; j++) {
 

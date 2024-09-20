@@ -885,20 +885,20 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : TIME_SWITCH_EXTI_Pin CAPTOUCH_CHANGE_EXTI_Pin */
-  GPIO_InitStruct.Pin = TIME_SWITCH_EXTI_Pin|CAPTOUCH_CHANGE_EXTI_Pin;
+  /*Configure GPIO pin : TIME_SWITCH_EXTI_Pin */
+  GPIO_InitStruct.Pin = TIME_SWITCH_EXTI_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(TIME_SWITCH_EXTI_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI0_1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI0_1_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI2_3_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI2_3_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -915,7 +915,7 @@ HAL_StatusTypeDef updateAndDisplayTime(void) {
 	HAL_StatusTypeDef halRet = HAL_OK;
 
 	getRTCTime(&hrtc, &currTime, &currDate);
-	sevSeg_updateDigits(&currTime);
+	sevSeg_updateDigits(&currTime, userAlarmToggle);
 
 	return halRet;
 
@@ -930,7 +930,7 @@ HAL_StatusTypeDef updateAndDisplayAlarm(void) {
 
 	HAL_StatusTypeDef halRet = HAL_OK;
 
-	sevSeg_updateDigits(&userAlarmTime);
+	sevSeg_updateDigits(&userAlarmTime, userAlarmToggle);
 
 	return halRet;
 
@@ -1135,6 +1135,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 HAL_StatusTypeDef displayButtonISR(void) {
 
 	//printf("Entered display toggle ISR\n\r");
+
+	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
 	HAL_StatusTypeDef halRet = HAL_OK;
 
 	updateAndDisplayTime();
@@ -1157,19 +1159,21 @@ HAL_StatusTypeDef displayButtonISR(void) {
  */
 HAL_StatusTypeDef alarmEnableISR(void) {
 
+	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
+
 	//printf("Entered alarm toggle ISR\n\r");
 	HAL_StatusTypeDef halRet = HAL_OK;
 
 	if(!userAlarmToggle) {					// If alarm is disabled, enable it.
 
-//		HAL_GPIO_WritePin(alarmLEDPort, alarmLEDPin, GPIO_PIN_SET);			// Turn on alarm LED
 		userAlarmToggle = true;								// Toggle internal flag to true
+		sevSeg_updateDigits(&currTime, userAlarmToggle);		// Update display with correct decimal point
 
 	}
 	else if (userAlarmToggle) {				// If alarm is enabled, disable it.
 
-//		HAL_GPIO_WritePin(alarmLEDPort, alarmLEDPin, GPIO_PIN_RESET);			// Turn off alarm LED
 		userAlarmToggle = false;							// Toggle internal flag to false
+		sevSeg_updateDigits(&currTime, userAlarmToggle);		// Update display with correct decimal point
 	}
 	else {
 		__NOP();							//Code should never reach here.
@@ -1189,6 +1193,8 @@ HAL_StatusTypeDef alarmEnableISR(void) {
  *
  */
 HAL_StatusTypeDef alarmSetISR(void) {
+
+	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
 
 	HAL_StatusTypeDef halRet = HAL_OK;
 
@@ -1278,6 +1284,7 @@ HAL_StatusTypeDef alarmSetISR(void) {
  */
 HAL_StatusTypeDef hourSetISR(void) {
 
+	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
 
 	HAL_StatusTypeDef halRet = HAL_OK;
 
@@ -1309,6 +1316,7 @@ HAL_StatusTypeDef hourSetISR(void) {
  */
 HAL_StatusTypeDef minuteSetISR(void) {
 
+	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
 
 	HAL_StatusTypeDef halRet = HAL_OK;
 

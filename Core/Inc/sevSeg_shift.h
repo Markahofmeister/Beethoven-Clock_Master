@@ -38,7 +38,7 @@ void sevSeg_Init(uint16_t shiftDataPin, uint16_t shiftDataClockPin, uint16_t shi
 					uint32_t tim_PWM_CHANNEL_pass);
 
 
-void sevSeg_updateDigits(RTC_TimeTypeDef *updateTime);
+void sevSeg_updateDigits(RTC_TimeTypeDef *updateTime, uint8_t userAlarmEnable);
 
 
 void sevSeg_setIntensity(uint16_t dutyCycle);
