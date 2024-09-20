@@ -1,5 +1,5 @@
-Core/Src/sevSeg_shift.o: ../Core/Src/sevSeg_shift.c \
- ../Core/Src/../Inc/sevSeg_shift.h \
+Core/Src/AT42QT1070_BC.o: ../Core/Src/AT42QT1070_BC.c \
+ ../Core/Inc/AT42QT1070.h \
  ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal.h \
  ../Core/Inc/stm32g0xx_hal_conf.h \
  ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_rcc.h \
@@ -36,7 +36,7 @@ Core/Src/sevSeg_shift.o: ../Core/Src/sevSeg_shift.c \
  ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_spi_ex.h \
  ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_tim.h \
  ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_tim_ex.h
-../Core/Src/../Inc/sevSeg_shift.h:
+../Core/Inc/AT42QT1070.h:
 ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal.h:
 ../Core/Inc/stm32g0xx_hal_conf.h:
 ../Drivers/STM32G0xx_HAL_Driver/Inc/stm32g0xx_hal_rcc.h:

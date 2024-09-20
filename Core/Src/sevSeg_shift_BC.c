@@ -5,7 +5,7 @@
  *      Author: marka
  */
 
-#include "../Inc/sevSeg_shift.h"
+#include <sevSeg_shift.h>
 
 /*
  * Digit 0 = LSB (ones place of minutes)
@@ -15,17 +15,32 @@
  */
 
 // Binary codes for each digit in the form of a 7-segment display.
-// All codes must have a 0 in the MSB, as the first output on each register is NC.
-const uint8_t dispDigits[10] = {0b01111110, 	// 0
-								0b00110000,		// 1
-								0b01101101,		// 2
-								0b01111001,		// 3
-								0b00110011,		// 4
-								0b01011011,		// 5
-								0b01011111,		// 6
-								0b01110000,		// 7
-								0b01111111,		// 8
-								0b01111011};	// 9
+// This is reversed - i.e., the activation is active low for Beethoven clock
+// Bit 1 in each is set to 1 because it is the decimal point and is changed in the display functions if necessary.
+const uint8_t dispDigits[10] = {0b01000010, 	// 0
+								0b01110111,		// 1
+								0b00101010,		// 2
+								0b00100011,		// 3
+								0b00010111,		// 4
+								0b10000011,		// 5
+								0b10000010,		// 6
+								0b01100111,		// 7
+								0b00000010,		// 8
+								0b00000011};	// 9
+
+	// Binary codes for each digit in the form of a 7-segment display.
+	// This is reversed - i.e., the activation is active low for Beethoven clock
+	// Bit 6 in each is set to 1 because it is the decimal point and is changed in the display functions if necessary.
+	//const uint8_t dispDigits[10] = {0b01000010, 	// 0
+	//								0b11101110,		// 1
+	//								0b01010100,		// 2
+	//								0b11000100,		// 3
+	//								0b11101000,		// 4
+	//								0b11000001,		// 5
+	//								0b01000001,		// 6
+	//								0b11100110,		// 7
+	//								0b01000000,		// 8
+	//								0b11000000};	// 9
 
 /*
  * 0b00010000 = Digit 3 LED OFF, LED colons ON, PM LED OFF
@@ -169,7 +184,9 @@ void sevSeg_updateDigits(RTC_TimeTypeDef *updateTime) {
 		dig3Offset = 2;
 	}
 
-	for(int i = 0; i < 4; i++) {
+	// TODO: Update alarm set here
+
+	for(int i = 3; i >= 0; i--) {
 
 		sendByte = dispDigits[sendTime[i]];
 
@@ -180,7 +197,7 @@ void sevSeg_updateDigits(RTC_TimeTypeDef *updateTime) {
 		for(int j = 0; j < 8; j++) {
 
 			// Write data pin with LSB of data
-			HAL_GPIO_WritePin(portArray[0], shiftData, GPIOPinSet[sendByte & 1]);
+			HAL_GPIO_WritePin(portArray[0], shiftData, GPIOPinSet[(sendByte & 1)]);
 
 			// Toggle clock GPIO to shift bit into register
 			HAL_GPIO_WritePin(portArray[1], shiftDataClock, GPIOPinSet[1]);

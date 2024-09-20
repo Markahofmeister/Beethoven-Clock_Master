@@ -48,9 +48,13 @@ GPIO_TypeDef *hourSetButtonPort = GPIOD;
 const uint16_t minuteSetButtonPin = GPIO_PIN_1;
 GPIO_TypeDef *minuteSetButtonPort = GPIOD;
 
+//TODO: Add time format switch
+
 // Capacitive Touch Reset Pin
 const uint16_t capTouchResetPin = GPIO_PIN_8;
 GPIO_TypeDef *capTouchResetPort = GPIOB;
+
+//TODO: Add Cap touch change pin
 
 // Specifies which channels of cap. touch IC to be used
 uint8_t capTouchChannels = 0b00001111;
@@ -64,15 +68,6 @@ uint8_t AVGFact = 16;
 // Specifies detection integration values for each cap. touch IC channel
 uint8_t DIFact = 0x04;
 
-
-/*
- * Map GPIOS to some LED outputs
- */
-const uint16_t alarmLEDPin = GPIO_PIN_12;		// Or 10. Unclear.
-GPIO_TypeDef *alarmLEDPort = GPIOA;
-
-const uint16_t buzzerPin = GPIO_PIN_8;
-GPIO_TypeDef *buzzerPort = GPIOA;
 
 /*
  * GPIO Pins for shift data
@@ -105,16 +100,16 @@ bool userAlarmToggle;
  * RTC Calibration
  */
 
-const uint16_t RTC_CLK_OUT_Pin = GPIO_PIN_4;
-GPIO_TypeDef *RTC_CLK_OUT_Port = GPIOA;
+//const uint16_t RTC_CLK_OUT_Pin = GPIO_PIN_3;
+//GPIO_TypeDef *RTC_CLK_OUT_Port = GPIOC;
 
-const uint16_t RTC_CLK_ADC_IN_Pin = GPIO_PIN_2;
-GPIO_TypeDef *RTC_CLK_ADC_IN_Port = GPIOA;
+//const uint16_t RTC_CLK_ADC_IN_Pin = GPIO_PIN_2;
+//GPIO_TypeDef *RTC_CLK_ADC_IN_Port = GPIOA;
 
 // Debug LED
 
-const uint16_t debugLEDPin = GPIO_PIN_0;
-GPIO_TypeDef *debugLEDPort = GPIOA;
+const uint16_t debugLEDPin = GPIO_PIN_12;
+GPIO_TypeDef *debugLEDPort = GPIOB;
 
 
 // RTC Calibration Value

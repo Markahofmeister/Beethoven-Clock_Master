@@ -25,9 +25,9 @@ uint8_t capTouch_Init(QT1070 *capTouch, I2C_HandleTypeDef *hi2c, TIM_HandleTypeD
 	capTouch->resetPin = capTouchResetPin;
 
 	// Hardware reset device
-	// Assumes active-high hardware configuration
-	HAL_GPIO_WritePin(*capTouch->resetPort, capTouch->resetPin, GPIO_PIN_SET);
+	// Assumes active-low hardware configuration
 	HAL_GPIO_WritePin(*capTouch->resetPort, capTouch->resetPin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(*capTouch->resetPort, capTouch->resetPin, GPIO_PIN_SET);
 
 	/*
 	 *  Delay for 500 ms using hardware timer
