@@ -156,12 +156,16 @@ void sevSeg_updateDigits(RTC_TimeTypeDef *updateTime, uint8_t userAlarmEnable) {
 
 		sendByte = dispDigits[sendTime[i]];
 
-		// If tenth's place of hour, set decimal point based on AM/PM.
-		if((i == 0) && (updateTime->TimeFormat == RTC_HOURFORMAT12_PM)) {
-			sendByte = (sendByte & !(1 << 1));
+		// If tenth's place of hour and zero, disable this segment
+		if( (i == 0) && (sendByte == dispDigits[0])) {
+			sendByte = 0xFF;
 		}
-		// If tenth's place of minute, set decimal place based on user alarm enabled
-		else if((i == 2) && userAlarmEnable) {
+
+		// If one's place of hour, set decimal point based on AM/PM.
+		// OR
+		// If one's place of minute, set decimal place based on user alarm enabled
+		if( ((i == 1) && (updateTime->TimeFormat == RTC_HOURFORMAT12_PM)) ||
+			((i == 3) && userAlarmEnable)	) {
 			sendByte = (sendByte & 0b11111101);
 		}
 
