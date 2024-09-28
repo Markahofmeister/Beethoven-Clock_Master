@@ -249,6 +249,11 @@ void dispFailure();
  */
 void updateRTCBackupReg(void);
 
+/*
+ * Converts the passed RTC time to the same time expressed in 24 hour (military) time
+ */
+RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -934,24 +939,14 @@ HAL_StatusTypeDef updateAndDisplayTime(void) {
 	// If the user wants 24-hour time, shift the time accordingly
 	if((userTimeFormat == RTC_HOURFORMAT_24)) {
 
-		// If we are in PM, increment hours by 12 (but not if it is 12 p.m.)
-		if(currTime.TimeFormat == RTC_HOURFORMAT12_PM && currTime.Hours != 12) {
-			currTime.Hours += 12;
-		}
-		// If we are in AM and the hours are 12, set hours to 0.
-		else if(currTime.TimeFormat == RTC_HOURFORMAT12_AM && currTime.Hours == 12) {
-			currTime.Hours = 0;
-		}
-		else { // No change
+		RTC_TimeTypeDef currTimeMil = conv2Mil(&currTime);
 
-		}
-
-		// Make the update and display time function think that it is AM always
-		currTime.TimeFormat = RTC_HOURFORMAT12_AM;
+		sevSeg_updateDigits(&currTimeMil, userAlarmToggle);
 
 	}
-
-	sevSeg_updateDigits(&currTime, userAlarmToggle);
+	else {
+		sevSeg_updateDigits(&currTime, userAlarmToggle);
+	}
 
 	return halRet;
 
@@ -966,7 +961,19 @@ HAL_StatusTypeDef updateAndDisplayAlarm(void) {
 
 	HAL_StatusTypeDef halRet = HAL_OK;
 
-	sevSeg_updateDigits(&userAlarmTime, userAlarmToggle);
+	// If the user wants 24-hour time, shift the time accordingly
+	if((userTimeFormat == RTC_HOURFORMAT_24)) {
+
+		RTC_TimeTypeDef userAlarmTimeMil = conv2Mil(&userAlarmTime);
+
+		sevSeg_updateDigits(&userAlarmTimeMil, userAlarmToggle);
+
+	}
+	else {
+		sevSeg_updateDigits(&userAlarmTime, userAlarmToggle);
+	}
+
+
 
 	return halRet;
 
@@ -1215,17 +1222,17 @@ HAL_StatusTypeDef alarmEnableISR(void) {
 	if(!userAlarmToggle) {					// If alarm is disabled, enable it.
 
 		userAlarmToggle = true;								// Toggle internal flag to true
-		sevSeg_updateDigits(&currTime, userAlarmToggle);		// Update display with correct decimal point
 
 	}
 	else if (userAlarmToggle) {				// If alarm is enabled, disable it.
 
 		userAlarmToggle = false;							// Toggle internal flag to false
-		sevSeg_updateDigits(&currTime, userAlarmToggle);		// Update display with correct decimal point
 	}
 	else {
 		__NOP();							//Code should never reach here.
 	}
+
+	updateAndDisplayTime();				// Update display with correct decimal point
 
 	// Reset snooze time
 	secondSnooze = false;
@@ -1591,6 +1598,28 @@ void updateRTCBackupReg(void) {
 
 }
 
+RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime) {
+
+	RTC_TimeTypeDef convertedTime = *oldTime;
+
+	// If we are in PM, increment hours by 12 (but not if it is 12 p.m.)
+	if(oldTime->TimeFormat == RTC_HOURFORMAT12_PM && oldTime->Hours != 12) {
+		convertedTime.Hours += 12;
+	}
+	// If we are in AM and the hours are 12, set hours to 0.
+	else if(oldTime->TimeFormat == RTC_HOURFORMAT12_AM && oldTime->Hours == 12) {
+		convertedTime.Hours = 0;
+	}
+	else { // No change
+
+	}
+
+	// Make the update and display time function think that it is AM always
+	convertedTime.TimeFormat = RTC_HOURFORMAT12_AM;
+
+	return convertedTime;
+
+}
 
 
 /* USER CODE END 4 */
