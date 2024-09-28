@@ -48,7 +48,8 @@ GPIO_TypeDef *hourSetButtonPort = GPIOD;
 const uint16_t minuteSetButtonPin = GPIO_PIN_1;
 GPIO_TypeDef *minuteSetButtonPort = GPIOD;
 
-//TODO: Add time format switch
+const uint16_t timeFormatSwitchPin = GPIO_PIN_4;
+GPIO_TypeDef *timeFormatSwitchPort = GPIOB;
 
 // Capacitive Touch Reset Pin
 const uint16_t capTouchResetPin = GPIO_PIN_8;
@@ -84,7 +85,7 @@ GPIO_TypeDef *GPIOPortArray[5] = {GPIOA, GPIOA, GPIOC, GPIOC, GPIOA};
  * Array of all duty cycles used - 0%, 50%, 100%.
  */
 
-const uint8_t sevSeg_intensityDuty[3] = {100, 90, 50};
+const uint8_t sevSeg_intensityDuty[2] = {100, 50};
 
 /*
  * Toggle Variables
@@ -138,6 +139,13 @@ uint32_t userAlarmHourBackupReg = RTC_BKP_DR0;
 uint32_t userAlarmMinuteBackupReg = RTC_BKP_DR1;
 uint32_t userAlarmTFBackupReg = RTC_BKP_DR2;
 uint32_t bootstrapBackupReg = RTC_BKP_DR3;
+
+/*
+ * RTC Time Time format (as set by user via switch)
+ */
+uint32_t userTimeFormat;
+GPIO_PinState userTimeFormatGPIO_12 = GPIO_PIN_SET;
+GPIO_PinState userTimeFormatGPIO_24  = GPIO_PIN_RESET;
 
 
 

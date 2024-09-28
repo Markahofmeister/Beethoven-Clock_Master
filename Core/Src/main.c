@@ -216,6 +216,12 @@ HAL_StatusTypeDef hourSetISR(void);
 HAL_StatusTypeDef minuteSetISR(void);
 
 /*
+ * Called on interrupt from time format switch
+ * Contains logic to change RTC time format
+ */
+HAL_StatusTypeDef timeFormatSwitchISR(void);
+
+/*
  * Hour and minute incrementing functions for alarm time and current time
  */
 void alarmHourInc(void);
@@ -288,10 +294,18 @@ int main(void)
   MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
 
-  // HAL Status handle for error-checking
-  HAL_StatusTypeDef halRet = HAL_OK;
+	  // HAL Status handle for error-checking
+	  HAL_StatusTypeDef halRet = HAL_OK;
 
-  // Set Smooth Calibration Value
+	  // Determine which time format we will be using
+	  	if(HAL_GPIO_ReadPin(timeFormatSwitchPort, timeFormatSwitchPin) == userTimeFormatGPIO_12) {
+	  	  userTimeFormat = RTC_HOURFORMAT_12;
+	  	}
+	  	else {
+	  	  userTimeFormat = RTC_HOURFORMAT_24;
+	  	}
+
+  	  // Set Smooth Calibration Value
 	  halRet = HAL_RTCEx_SetSmoothCalib(&hrtc, RTC_SMOOTHCALIB_PERIOD_8SEC,
 									RTC_SMOOTHCALIB_PLUSPULSES_RESET, rtcCalVal);
 	  if(halRet != HAL_OK) {
@@ -299,14 +313,14 @@ int main(void)
 		  dispFailure();
 	  }
 
-  // Init the internal RTC alarm time to track the current time
+	  // Init the internal RTC alarm time to track the current time
 	  halRet = initRTCInternalAlarm(&hrtc, &currTime, &currDate);
 	  if(halRet != HAL_OK) {
 		  // Failure to initialize RTC alarm is a hard failure
 		  dispFailure();
 		}
 
-  // Initialize all GPIOs to be used with 7 segment display
+	  // Initialize all GPIOs to be used with 7 segment display
 		sevSeg_Init(shiftDataPin, shiftDataClockPin, shiftStoreClockPin,
 					shiftOutputEnablePin, shiftMCLRPin,
 					GPIOPortArray, timerDelay, timerPWM, tim_PWM_CHANNEL);
@@ -365,7 +379,7 @@ int main(void)
 			dispFault();
 		}
 
-    userAlarmToggle = false;			//Default to off
+		userAlarmToggle = false;			//Default to off
 
 
     /*
@@ -418,6 +432,7 @@ int main(void)
 
   while (1)
   {
+
 
 
     /* USER CODE END WHILE */
@@ -887,7 +902,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : TIME_SWITCH_EXTI_Pin */
   GPIO_InitStruct.Pin = TIME_SWITCH_EXTI_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(TIME_SWITCH_EXTI_GPIO_Port, &GPIO_InitStruct);
 
@@ -915,6 +930,27 @@ HAL_StatusTypeDef updateAndDisplayTime(void) {
 	HAL_StatusTypeDef halRet = HAL_OK;
 
 	getRTCTime(&hrtc, &currTime, &currDate);
+
+	// If the user wants 24-hour time, shift the time accordingly
+	if((userTimeFormat == RTC_HOURFORMAT_24)) {
+
+		// If we are in PM, increment hours by 12 (but not if it is 12 p.m.)
+		if(currTime.TimeFormat == RTC_HOURFORMAT12_PM && currTime.Hours != 12) {
+			currTime.Hours += 12;
+		}
+		// If we are in AM and the hours are 12, set hours to 0.
+		else if(currTime.TimeFormat == RTC_HOURFORMAT12_AM && currTime.Hours == 12) {
+			currTime.Hours = 0;
+		}
+		else { // No change
+
+		}
+
+		// Make the update and display time function think that it is AM always
+		currTime.TimeFormat = RTC_HOURFORMAT12_AM;
+
+	}
+
 	sevSeg_updateDigits(&currTime, userAlarmToggle);
 
 	return halRet;
@@ -1107,8 +1143,24 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin) {
 			//printf("Minute increment ISR success.\n\r");
 		}
 	}
+	else if(GPIO_Pin == timeFormatSwitchPin) {
+
+		halRet = timeFormatSwitchISR();
+
+	}
+
 	else {			//Code should never reach here, but do nothing if it does.
 		__NOP();
+	}
+
+}
+
+void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin) {
+
+	if(GPIO_Pin == timeFormatSwitchPin) {
+
+		timeFormatSwitchISR();
+
 	}
 
 }
@@ -1134,18 +1186,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  */
 HAL_StatusTypeDef displayButtonISR(void) {
 
-	//printf("Entered display toggle ISR\n\r");
-
-	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
 	HAL_StatusTypeDef halRet = HAL_OK;
 
 	updateAndDisplayTime();
 
 	sevSeg_setIntensity(sevSeg_intensityDuty[displayToggle]);		//Turn display to proper duty cycle
 
-	if(displayToggle >= 2) {			// Increment display toggle or reset back down to 0;
+	if(displayToggle >= 1) {			// Increment display toggle or reset back down to 0;
 		displayToggle = 0;
-//		HAL_GPIO_WritePin(GPIOB, PMLED, GPIO_PIN_RESET);		// If display is off, turn off AM/PM LED
 	} else {
 		displayToggle++;
 	}
@@ -1159,7 +1207,7 @@ HAL_StatusTypeDef displayButtonISR(void) {
  */
 HAL_StatusTypeDef alarmEnableISR(void) {
 
-	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
+
 
 	//printf("Entered alarm toggle ISR\n\r");
 	HAL_StatusTypeDef halRet = HAL_OK;
@@ -1194,7 +1242,7 @@ HAL_StatusTypeDef alarmEnableISR(void) {
  */
 HAL_StatusTypeDef alarmSetISR(void) {
 
-	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
+
 
 	HAL_StatusTypeDef halRet = HAL_OK;
 
@@ -1284,7 +1332,7 @@ HAL_StatusTypeDef alarmSetISR(void) {
  */
 HAL_StatusTypeDef hourSetISR(void) {
 
-	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
+
 
 	HAL_StatusTypeDef halRet = HAL_OK;
 
@@ -1316,7 +1364,7 @@ HAL_StatusTypeDef hourSetISR(void) {
  */
 HAL_StatusTypeDef minuteSetISR(void) {
 
-	HAL_GPIO_TogglePin(debugLEDPort, debugLEDPin);
+
 
 	HAL_StatusTypeDef halRet = HAL_OK;
 
@@ -1346,7 +1394,6 @@ HAL_StatusTypeDef minuteSetISR(void) {
 		}
 		while(HAL_RTC_SetAlarm_IT(&hrtc, &sAlarm, FORMAT_BIN)!=HAL_OK){}
 
-
 		updateAndDisplayTime();
 
 		getRTCTime(&hrtc, &currTime, &currDate);
@@ -1357,6 +1404,27 @@ HAL_StatusTypeDef minuteSetISR(void) {
 
 
 	return halRet;
+}
+
+/*
+ * Switch hour format (12 or 24 hr)
+ */
+HAL_StatusTypeDef timeFormatSwitchISR(void) {
+
+	HAL_StatusTypeDef halRet = HAL_OK;
+
+	// Determine which time format we will be using
+	if(HAL_GPIO_ReadPin(timeFormatSwitchPort, timeFormatSwitchPin) == userTimeFormatGPIO_12) {
+	  userTimeFormat = RTC_HOURFORMAT_12;
+	}
+	else {
+	  userTimeFormat = RTC_HOURFORMAT_24;
+	}
+
+	updateAndDisplayTime();
+
+	return halRet;
+
 }
 
 /*
