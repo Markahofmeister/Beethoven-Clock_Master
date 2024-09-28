@@ -297,8 +297,13 @@ int main(void)
 	  // HAL Status handle for error-checking
 	  HAL_StatusTypeDef halRet = HAL_OK;
 
-	  // TODO: Re-initialize RTC with new hour format
-  	  timeFormatSwitchISR();
+	  // Determine which time format we will be using
+	  	if(HAL_GPIO_ReadPin(timeFormatSwitchPort, timeFormatSwitchPin) == userTimeFormatGPIO_12) {
+	  	  userTimeFormat = RTC_HOURFORMAT_12;
+	  	}
+	  	else {
+	  	  userTimeFormat = RTC_HOURFORMAT_24;
+	  	}
 
   	  // Set Smooth Calibration Value
 	  halRet = HAL_RTCEx_SetSmoothCalib(&hrtc, RTC_SMOOTHCALIB_PERIOD_8SEC,
@@ -925,6 +930,27 @@ HAL_StatusTypeDef updateAndDisplayTime(void) {
 	HAL_StatusTypeDef halRet = HAL_OK;
 
 	getRTCTime(&hrtc, &currTime, &currDate);
+
+	// If the user wants 24-hour time, shift the time accordingly
+	if((userTimeFormat == RTC_HOURFORMAT_24)) {
+
+		// If we are in PM, increment hours by 12 (but not if it is 12 p.m.)
+		if(currTime.TimeFormat == RTC_HOURFORMAT12_PM && currTime.Hours != 12) {
+			currTime.Hours += 12;
+		}
+		// If we are in AM and the hours are 12, set hours to 0.
+		else if(currTime.TimeFormat == RTC_HOURFORMAT12_AM && currTime.Hours == 12) {
+			currTime.Hours = 0;
+		}
+		else { // No change
+
+		}
+
+		// Make the update and display time function think that it is AM always
+		currTime.TimeFormat = RTC_HOURFORMAT12_AM;
+
+	}
+
 	sevSeg_updateDigits(&currTime, userAlarmToggle);
 
 	return halRet;
@@ -1387,9 +1413,6 @@ HAL_StatusTypeDef timeFormatSwitchISR(void) {
 
 	HAL_StatusTypeDef halRet = HAL_OK;
 
-	// Disable write protection on RTC
-	__HAL_RTC_WRITEPROTECTION_DISABLE(&hrtc);
-
 	// Determine which time format we will be using
 	if(HAL_GPIO_ReadPin(timeFormatSwitchPort, timeFormatSwitchPin) == userTimeFormatGPIO_12) {
 	  userTimeFormat = RTC_HOURFORMAT_12;
@@ -1397,14 +1420,6 @@ HAL_StatusTypeDef timeFormatSwitchISR(void) {
 	else {
 	  userTimeFormat = RTC_HOURFORMAT_24;
 	}
-
-	hrtc.Init.HourFormat = userTimeFormat;
-
-	// Re-initialize RTC
-	halRet = HAL_RTC_Init(&hrtc);
-
-	// Re-enale write protection on RTC
-	__HAL_RTC_WRITEPROTECTION_ENABLE(&hrtc);
 
 	updateAndDisplayTime();
 
