@@ -18,11 +18,11 @@
 #define CMD_WRITE_ENABLE 		0x06
 #define CMD_VOL_SR_WE 			0x50
 #define CMD_WRITE_DISABLE		0x04
-#define CMD_READ_RELEASE_ID		0xAB
+#define CMD_READ_RELEASE_ID		0xAB	// Use
 #define CMD_READ_MFR_ID			0x90
 #define CMD_READ_JEDEC_ID		0x9F
 #define CMD_READ_UID			0x4B
-#define CMD_READ_DATA			0x03
+#define CMD_READ_DATA			0x03	// Use
 #define CMD_FAST_READ			0x0B
 #define CMD_PAGE_PROG			0x02
 #define CMD_SECT_ERASE_4KB		0x20
@@ -47,8 +47,8 @@
 #define CMD_PROG_SUSPEND		0x75
 #define CMD_PROG_RESUME			0x7A
 #define CMD_POWER_DOWN			0xB9
-#define CMD_RESET_ENABLE		0x66
-#define CMD_RESET_DEVICE		0x99
+#define CMD_RESET_ENABLE		0x66	// Use
+#define CMD_RESET_DEVICE		0x99	// Use
 
 
 /*
@@ -181,18 +181,18 @@ HAL_StatusTypeDef W25Q_GetIDs(W25Q *wq, uint8_t devID);
 /*
  * Enables writing to memory
  */
-HAL_StatusTypeDef W25Q_EnableWrite(W25Q *wq);
+//HAL_StatusTypeDef W25Q_EnableWrite(W25Q *wq);
 /*
  * Disables writing to memory
  */
-HAL_StatusTypeDef W25Q_DisableWrite(W25Q *wq);
+//HAL_StatusTypeDef W25Q_DisableWrite(W25Q *wq);
 
 /*
  * Get/Set methods for write status register
  */
-HAL_StatusTypeDef W25Q_ReadStatusReg(W25Q *wq, uint8_t regNum);		// Read single status register
-HAL_StatusTypeDef W25Q_ReadStatusRegs(W25Q *wq);					// Read all status registers
-HAL_StatusTypeDef W25Q_WriteStatusReg(W25Q *wq, uint8_t regNum, uint8_t regVal);
+//HAL_StatusTypeDef W25Q_ReadStatusReg(W25Q *wq, uint8_t regNum);		// Read single status register
+//HAL_StatusTypeDef W25Q_ReadStatusRegs(W25Q *wq);					// Read all status registers
+//HAL_StatusTypeDef W25Q_WriteStatusReg(W25Q *wq, uint8_t regNum, uint8_t regVal);
 
 /*
  * Read data from memory
@@ -203,14 +203,23 @@ HAL_StatusTypeDef W25Q_WriteStatusReg(W25Q *wq, uint8_t regNum, uint8_t regVal);
 HAL_StatusTypeDef W25Q_readData(W25Q *wq, uint32_t startAddress, uint32_t dataSize, uint8_t *dataLocation);
 
 /*
+ * Read data from memory over DMA
+ *
+ * startAddress = address to begin reading memory from, 24 bits
+ * dataSize = number of bits to be read
+ * dataLocation = pointer to array where data is to be placed
+ */
+HAL_StatusTypeDef W25Q_readDataDMA(W25Q *wq, uint32_t startAddress, uint32_t dataSize, uint8_t *dataLocation);
+
+/*
  * Erases Entire memory
  */
-HAL_StatusTypeDef W25Q_ChipErase(W25Q *wq);
+//HAL_StatusTypeDef W25Q_ChipErase(W25Q *wq);
 
 /*
  * Powers down the chip to a low-power mode
  */
-HAL_StatusTypeDef W25Q_ChipPowerDown(W25Q *wq);
+//HAL_StatusTypeDef W25Q_ChipPowerDown(W25Q *wq);
 
 /*
  * Resets the chip
@@ -220,7 +229,7 @@ HAL_StatusTypeDef W25Q_ChipReset(W25Q *wq);
 /*
  * Enables (1) or disables (0) quad SPI mode
  */
-HAL_StatusTypeDef W25Q_QuadEnable(W25Q *wq, uint8_t quadBool);
+//HAL_StatusTypeDef W25Q_QuadEnable(W25Q *wq, uint8_t quadBool);
 
 /*
  * Sets the river strength of the W25Q output drivers
@@ -230,7 +239,7 @@ HAL_StatusTypeDef W25Q_QuadEnable(W25Q *wq, uint8_t quadBool);
  * 		2 = 50% strength
  * 		3 = 25% strength (default)
  */
-HAL_StatusTypeDef W25Q_SetDriverStrength(W25Q *wq, uint8_t driverStrength);
+//HAL_StatusTypeDef W25Q_SetDriverStrength(W25Q *wq, uint8_t driverStrength);
 
 
 #endif /* INC_W25QXXX_H_ */

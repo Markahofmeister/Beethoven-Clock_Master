@@ -463,19 +463,20 @@ int main(void)
 
   	  // TODO: Init Memory Chip
 
-//		initRet = W25Q_Init(&spiFlash, nCSPort, nWPPort, nHOLDPort,
-//				nCSPin, nWPPin, nHOLDPin, &hspi2, spiFlash_devID, spiFlash_isQuadChip, spiFlash_driveStrength);
+		initRet = W25Q_Init(&spiFlash, nCSPort, nWPPort, nHOLDPort,
+				nCSPin, nWPPin, nHOLDPin, &hspi2, spiFlash_devID, spiFlash_isQuadChip, spiFlash_driveStrength);
+		if(initRet != 0) {
+			dispFault();
+		}
 
      // Init i2s amplifier
-		NAU9315YG_Init(&i2sAmp, &hi2s1, i2sAmp_enablePort, i2sAmp_enablePin);
+		NAU8315YG_Init(&i2sAmp, &hi2s1, i2sAmp_enablePort, i2sAmp_enablePin);
 
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
-		__NOP();
 
   while (1)
   {
@@ -1691,6 +1692,9 @@ RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime) {
 void startAudioStream(void) {
 
 	// Enable Amp
+	NAU8315YG_AmpEnable(&i2sAmp);
+
+//	W25Q_readDataDMA(&spiFlash, 0x00, BUFFER_SIZE, spiRxBuff1);
 
 
 }
