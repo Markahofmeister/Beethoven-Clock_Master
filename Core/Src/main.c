@@ -288,6 +288,11 @@ void updateRTCBackupReg(void);
 void startAudioStream(void);
 
 /*
+ * Halts double-buffered DMA streams, terminating audio output
+ */
+void stopAudioStream(void);
+
+/*
  * Converts the passed RTC time to the same time expressed in 24 hour (military) time
  */
 RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime);
@@ -451,6 +456,9 @@ int main(void)
 
   	  // TODO: Init Memory Chip
 
+//		initRet = W25Q_Init(&spiFlash, nCSPort, nWPPort, nHOLDPort,
+//				nCSPin, nWPPin, nHOLDPin, &hspi2, spiFlash_devID, spiFlash_isQuadChip, spiFlash_driveStrength);
+
 //	     uint8_t initStat = W25Q_Init(&spiFlash, GPIOA, GPIOA, GPIOA,
 //	   		  	  	  	  	  	  GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7, &hspi2, 0x17, 1, 1);
 //
@@ -465,6 +473,8 @@ int main(void)
 //		 }
 
      // TODO: Init i2s amplifier
+
+		NAU9315YG_Init(&i2sAmp, &hi2s1, i2sAmp_enablePort, i2sAmp_enablePin);
 
 
   /* USER CODE END 2 */
@@ -631,8 +641,8 @@ static void MX_RTC_Init(void)
 
   /* USER CODE END RTC_Init 0 */
 
-  RTC_TimeTypeDef sTime = {0};
-  RTC_DateTypeDef sDate = {0};
+//  RTC_TimeTypeDef sTime = {0};
+//  RTC_DateTypeDef sDate = {0};
   RTC_AlarmTypeDef sAlarm = {0};
 
   /* USER CODE BEGIN RTC_Init 1 */
@@ -1103,7 +1113,8 @@ void userAlarmBeep() {
 	uint32_t timerVal = __HAL_TIM_GET_COUNTER(timerDelay);	// Get initial timer value to compare to
 	bool displayBlink = false;
 
-	// TODO: Start audio DMA streams
+	// Begins streaming audio to user
+	startAudioStream();
 
 	do {						// Beep buzzer and blink display until snooze button is pressed
 
@@ -1126,10 +1137,10 @@ void userAlarmBeep() {
 			(HAL_GPIO_ReadPin(alarmEnableButtonPort, alarmEnableButtonPin) != GPIO_PIN_RESET));
 
 	/*
-	 * Stop blinking, turn off buzzer, set 50% duty cycle, update time
+	 * Stop blinking, turn off sound, set 50% duty cycle, update time
 	 */
 	HAL_TIM_Base_Stop(timerDelay);
-
+	stopAudioStream();
 	updateAndDisplayTime();				// Update to current time and display
 	sevSeg_setIntensity(sevSeg_intensityDuty[1]);	// Set to 50% duty cycle
 	displayToggle = 2;								// Set to 2 for future display button ISRs
@@ -1684,7 +1695,21 @@ RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime) {
 /*
  * Begins DMA streams to pull data from memory, process data, and push to i2s amplifier.
  */
-void startAudioStream(void);
+void startAudioStream(void) {
+
+	// Enable Amp
+
+
+}
+
+/*
+ * Halts double-buffered DMA streams, terminating audio output
+ */
+void stopAudioStream(void) {
+
+	// Disable Amp
+
+}
 
 /* USER CODE END 4 */
 
