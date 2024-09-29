@@ -1,6 +1,7 @@
 "./Core/Src/AT42QT1070_BC.o"
 "./Core/Src/NAU8315YG.o"
 "./Core/Src/W25Qxxx.o"
+"./Core/Src/W25Qxxx_shrunk.o"
 "./Core/Src/alarm.o"
 "./Core/Src/main.o"
 "./Core/Src/sevSeg_shift_BC.o"

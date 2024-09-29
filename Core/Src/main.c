@@ -53,8 +53,15 @@
 /*
  * Include SPI Flash Memeory Driver
  */
-#ifndef W25QXXX_H_
-#include "W25Qxxx.h"
+//#ifndef W25QXXX_H_
+//#include "W25Qxxx.h"
+//#endif
+
+/*
+ * Include shrunk-down version of flash memory driver
+ */
+#ifndef W25QXXX_SHRUNK_H_
+#include "W25Qxxx_shrunk.h"
 #endif
 
 /*
@@ -459,21 +466,7 @@ int main(void)
 //		initRet = W25Q_Init(&spiFlash, nCSPort, nWPPort, nHOLDPort,
 //				nCSPin, nWPPin, nHOLDPin, &hspi2, spiFlash_devID, spiFlash_isQuadChip, spiFlash_driveStrength);
 
-//	     uint8_t initStat = W25Q_Init(&spiFlash, GPIOA, GPIOA, GPIOA,
-//	   		  	  	  	  	  	  GPIO_PIN_5, GPIO_PIN_6, GPIO_PIN_7, &hspi2, 0x17, 1, 1);
-//
-//		 // Enter error loop if there's an error in initialization
-//		 if(initStat != 0) {
-//		   while(1) {
-//			   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_SET);
-//			   HAL_Delay(500);
-//			   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, GPIO_PIN_RESET);
-//			   HAL_Delay(500);
-//		   }
-//		 }
-
-     // TODO: Init i2s amplifier
-
+     // Init i2s amplifier
 		NAU9315YG_Init(&i2sAmp, &hi2s1, i2sAmp_enablePort, i2sAmp_enablePin);
 
 
