@@ -85,10 +85,13 @@
 I2C_HandleTypeDef hi2c1;
 
 I2S_HandleTypeDef hi2s1;
+DMA_HandleTypeDef hdma_spi1_tx;
 
 RTC_HandleTypeDef hrtc;
 
 SPI_HandleTypeDef hspi2;
+DMA_HandleTypeDef hdma_spi2_rx;
+DMA_HandleTypeDef hdma_spi2_tx;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim14;
@@ -145,11 +148,41 @@ W25Q spiFlash;
  */
 NAU8315YG i2sAmp;
 
+/*
+ * DMA buffers & flags
+ */
+
+// Two buffers to ping-pong in between for SPI RX
+uint8_t spiRxBuff1[BUFFER_SIZE];
+uint8_t spiRxBuff2[BUFFER_SIZE];
+
+// Pointer to signify which RX buffer DMA should RX data to
+uint8_t *spiRxPtr = &spiRxBuff1[0];
+
+// Pointer to signify which RX buffer CPU should process data from
+uint8_t *dataProcessPtr = &spiRxBuff1[0];
+
+// Single circular output buffer to TX I2S audio data
+uint16_t i2sTxBuff[BUFFER_SIZE];
+
+// Pointer to signify which part of the TX buffer we point to
+uint16_t *spiTxPtr = &i2sTxBuff[0];
+
+/*
+ * Bools to indicate DMA status
+ */
+bool clearToFillBuff1 = 0;
+bool clearToFillBuff2 = 0;
+bool clearToProcessBuff1 = 0;
+bool clearToProcessBuff2 = 0;
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_RTC_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_I2S1_Init(void);
@@ -250,6 +283,11 @@ void dispFailure();
 void updateRTCBackupReg(void);
 
 /*
+ * Begins double-buffered DMA streams to provide audio output
+ */
+void startAudioStream(void);
+
+/*
  * Converts the passed RTC time to the same time expressed in 24 hour (military) time
  */
 RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime);
@@ -290,6 +328,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_RTC_Init();
   MX_I2C1_Init();
   MX_I2S1_Init();
@@ -592,6 +631,7 @@ static void MX_RTC_Init(void)
 
   /* USER CODE END RTC_Init 0 */
 
+  RTC_TimeTypeDef sTime = {0};
   RTC_DateTypeDef sDate = {0};
   RTC_AlarmTypeDef sAlarm = {0};
 
@@ -632,17 +672,15 @@ static void MX_RTC_Init(void)
 //  {
 //    Error_Handler();
 //  }
-
-
-  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
-  sDate.Month = RTC_MONTH_JANUARY;
-  sDate.Date = 0x1;
-  sDate.Year = 0x0;
-
-  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
-  {
-    Error_Handler();
-  }
+//  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+//  sDate.Month = RTC_MONTH_JANUARY;
+//  sDate.Date = 0x1;
+//  sDate.Year = 0x0;
+//
+//  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
 
   /** Enable the Alarm A
   */
@@ -828,6 +866,25 @@ static void MX_TIM16_Init(void)
   /* USER CODE BEGIN TIM16_Init 2 */
 
   /* USER CODE END TIM16_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
 
 }
 
@@ -1046,6 +1103,8 @@ void userAlarmBeep() {
 	uint32_t timerVal = __HAL_TIM_GET_COUNTER(timerDelay);	// Get initial timer value to compare to
 	bool displayBlink = false;
 
+	// TODO: Start audio DMA streams
+
 	do {						// Beep buzzer and blink display until snooze button is pressed
 
 		updateAndDisplayTime();				// Update to current time and display
@@ -1062,9 +1121,6 @@ void userAlarmBeep() {
 
 
 		capTouch_readChannels(&capTouch);
-//		HAL_StatusTypeDef halRet = capTouch_readChannels(&capTouch);
-//		if(halRet != HAL_OK)
-//			dispError();
 
 	} while(capTouch.keyStat == 0x00 &&
 			(HAL_GPIO_ReadPin(alarmEnableButtonPort, alarmEnableButtonPin) != GPIO_PIN_RESET));
@@ -1598,6 +1654,10 @@ void updateRTCBackupReg(void) {
 
 }
 
+/*
+ * Converts the time in an AM/PM RTC time to 24-hour time
+ * Returns this time in an RTC Time Def object
+ */
 RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime) {
 
 	RTC_TimeTypeDef convertedTime = *oldTime;
@@ -1621,6 +1681,10 @@ RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime) {
 
 }
 
+/*
+ * Begins DMA streams to pull data from memory, process data, and push to i2s amplifier.
+ */
+void startAudioStream(void);
 
 /* USER CODE END 4 */
 

@@ -147,6 +147,11 @@ uint32_t userTimeFormat;
 GPIO_PinState userTimeFormatGPIO_12 = GPIO_PIN_SET;
 GPIO_PinState userTimeFormatGPIO_24  = GPIO_PIN_RESET;
 
+/*
+ * Audio/DMA things
+ */
+
+#define BUFFER_SIZE 256
 
 
 #endif /* INC_BEETHOVENCLOCKVARS_H_ */
