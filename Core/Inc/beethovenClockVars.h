@@ -148,6 +148,25 @@ GPIO_PinState userTimeFormatGPIO_12 = GPIO_PIN_SET;
 GPIO_PinState userTimeFormatGPIO_24  = GPIO_PIN_RESET;
 
 /*
+ * SPI Flash memory settings
+ */
+GPIO_TypeDef *nCSPort = GPIOA;
+GPIO_TypeDef *nWPPort = GPIOA;
+GPIO_TypeDef *nHOLDPort = GPIOA;
+uint32_t nCSPin = GPIO_PIN_5;
+uint32_t nWPPin = GPIO_PIN_6;
+uint32_t nHOLDPin = GPIO_PIN_7;
+uint8_t spiFlash_devID = 0x17;
+uint8_t spiFlash_isQuadChip = 1;
+uint8_t spiFlash_driveStrength = 1;
+
+/*
+ * I2S Amplifier Settings
+ */
+GPIO_TypeDef *i2sAmp_enablePort = GPIOB;
+uint32_t i2sAmp_enablePin = GPIO_PIN_1;
+
+/*
  * Audio/DMA things
  */
 

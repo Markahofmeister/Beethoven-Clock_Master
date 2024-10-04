@@ -289,6 +289,11 @@ void updateRTCBackupReg(void);
 void startAudioStream(void);
 
 /*
+ * Halts double-buffered DMA streams
+ */
+void stopAudioStream(void);
+
+/*
  * Converts the passed RTC time to the same time expressed in 24 hour (military) time
  */
 RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime);
@@ -632,8 +637,8 @@ static void MX_RTC_Init(void)
 
   /* USER CODE END RTC_Init 0 */
 
-  RTC_TimeTypeDef sTime = {0};
-  RTC_DateTypeDef sDate = {0};
+//  RTC_TimeTypeDef sTime = {0};
+//  RTC_DateTypeDef sDate = {0};
   RTC_AlarmTypeDef sAlarm = {0};
 
   /* USER CODE BEGIN RTC_Init 1 */
@@ -1105,6 +1110,7 @@ void userAlarmBeep() {
 	bool displayBlink = false;
 
 	// TODO: Start audio DMA streams
+	startAudioStream();
 
 	do {						// Beep buzzer and blink display until snooze button is pressed
 
@@ -1130,6 +1136,9 @@ void userAlarmBeep() {
 	 * Stop blinking, turn off buzzer, set 50% duty cycle, update time
 	 */
 	HAL_TIM_Base_Stop(timerDelay);
+
+	// TODO: Stop audio stream
+	stopAudioStream();
 
 	updateAndDisplayTime();				// Update to current time and display
 	sevSeg_setIntensity(sevSeg_intensityDuty[1]);	// Set to 50% duty cycle
@@ -1685,7 +1694,16 @@ RTC_TimeTypeDef conv2Mil(RTC_TimeTypeDef *oldTime) {
 /*
  * Begins DMA streams to pull data from memory, process data, and push to i2s amplifier.
  */
-void startAudioStream(void);
+void startAudioStream(void) {
+
+}
+
+/*
+ * Halts DMA streams
+ */
+void stopAudioStream(void) {
+
+}
 
 /* USER CODE END 4 */
 
