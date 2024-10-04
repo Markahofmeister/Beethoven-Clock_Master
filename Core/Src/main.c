@@ -99,6 +99,7 @@ TIM_HandleTypeDef htim16;
 
 /* USER CODE BEGIN PV */
 
+
 /*
  * Timer to be used for PWMing display
  */
